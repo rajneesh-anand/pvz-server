@@ -5,3 +5,4 @@ dist
 app.yaml
 .gcloudignore
 test.js
+serviceAccountKey.json

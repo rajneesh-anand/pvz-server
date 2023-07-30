@@ -31,14 +31,35 @@ router.get("/fcm-message", async (req, res) => {
   }
 });
 
-router.post("/post-message", (req, res) => {
-  const { fname, lname } = req.body;
-  console.log(fname);
-  console.log(lname);
-  res.render("index", { id: fname });
+router.post("/post-message", async (req, res) => {
+  const { title, message } = req.body;
+
+  if (title == "" || message == "") {
+    return res.render("index", { message: "All fields required " });
+  } else {
+    const topic = "yandexpvz";
+    const fcm_message = {
+      notification: {
+        title: title,
+        body: message,
+      },
+      topic: topic,
+    };
+    try {
+      const response = await messaging.send(fcm_message);
+      console.log(response);
+      // return res.status(200).json({ response });
+      return res.render("index", { message: "Message Sent Successfully ! " });
+    } catch (error) {
+      console.log("Error sending message:", error.message);
+      // return res.status(400).json({ message: error.message });
+      return res.render("index", { message: "Message Failed ! " });
+    }
+  }
 });
-router.get("/testing", (req, res) => {
-  return res.status(200).json({ message: "hello" });
+
+router.get("/test", (req, res) => {
+  return res.status(200).json({ message: "hello testing" });
 });
 
 module.exports = router;

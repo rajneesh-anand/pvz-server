@@ -2,33 +2,39 @@
 <html lang="en">
   <%- include('partials/head.ejs') %>
   <body class="container">
-    <%- include('partials/navigation.ejs') %>
+    <!-- <%- include('partials/navigation.ejs') %> -->
 
     <main>
-      <div class="ui segment">
-        <h1>At least we can see something now</h1>
-        <p>This is visual of templating through EJS</p>
-      </div>
-      <h1>Updating Id <%= id %></h1>
-      <form class="ui form" method="POST" action="/api/test/message">
-        <div class="field">
-          <label>First Name</label>
-          <input type="text" name="fname" placeholder="First Name" />
-        </div>
-        <div class="field">
-          <label>Last Name</label>
-          <input type="text" name="lname" placeholder="Last Name" />
-        </div>
-        <div class="field">
-          <div class="ui checkbox">
-            <input type="checkbox" tabindex="0" class="hidden" />
-            <label>I agree to the Terms and Conditions</label>
+      <div class="ui center aligned container">
+        <h1>Write FCM Message for Yandex PVZ android app</h1>
+        <form class="ui form" method="POST" action="/api/message/post-message">
+          <div class="field">
+            <label>Message Title</label>
+            <input
+              type="text"
+              name="title"
+              placeholder="Message Title"
+              required
+            />
           </div>
-        </div>
-        <button class="ui button" type="submit">Submit</button>
-      </form>
-    </main>
+          <div class="field">
+            <label>Message Description</label>
+            <textarea
+              rows="5"
+              name="message"
+              placeholder="Message ....."
+              required
+            ></textarea>
+          </div>
 
+          <button class="ui button" type="submit">Submit</button>
+        </form>
+
+        <% if(message) { %>
+        <h3><%= message %></h3>
+        <% } %>
+      </div>
+    </main>
     <%- include('partials/footer.ejs') %>
   </body>
 </html>

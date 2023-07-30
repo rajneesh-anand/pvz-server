@@ -1,0 +1,53 @@
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const user = require("./routes/user");
+const coin = require("./routes/coin");
+const product = require("./routes/product");
+const test = require("./routes/test");
+
+require("dotenv").config();
+
+const app = express();
+const port = process.env.PORT || 4040;
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
+app.set("views", "views");
+
+let allowedDomains = [
+  "http://localhost:3000",
+  "http://localhost:4040",
+  "127.0.0.1:4040",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedDomains.indexOf(origin) === -1) {
+        var msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+  })
+);
+
+app.use((req, res, next) => {
+  console.log(req.path, req.method);
+  next();
+});
+
+app.get("/", (req, res) => {
+  res.render("index", { id: "" });
+});
+app.use("/api/user", user);
+app.use("/api/coin", coin);
+app.use("/api/product", product);
+app.use("/api/test", test);
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});

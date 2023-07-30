@@ -4,7 +4,7 @@ const path = require("path");
 const user = require("./routes/user");
 const coin = require("./routes/coin");
 const product = require("./routes/product");
-const test = require("./routes/test");
+const message = require("./routes/message");
 
 require("dotenv").config();
 
@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", user);
 app.use("/api/coin", coin);
 app.use("/api/product", product);
-app.use("/api/test", test);
+app.use("/api/message", message);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

@@ -19,6 +19,7 @@ app.set("views", "views");
 let allowedDomains = [
   "http://localhost:3000",
   "http://localhost:4040",
+  "http://194.67.90.60:4040",
   "127.0.0.1:4040",
 ];
 

@@ -37,7 +37,7 @@ router.post("/post-message", (req, res) => {
   console.log(lname);
   res.render("index", { id: fname });
 });
-router.get("testing", (req, res) => {
+router.get("/testing", (req, res) => {
   return res.status(200).json({ message: "hello" });
 });
 

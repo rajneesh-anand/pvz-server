@@ -40,7 +40,7 @@ router.post("/register", async (req, res) => {
 
     if (userExits > 0) {
       return res.status(403).json({
-        message: "Mobile already in use !",
+        message: "Мобильный номер уже используется!",
       });
     } else {
       const salt = await genSalt(10);
@@ -58,7 +58,6 @@ router.post("/register", async (req, res) => {
           userStatus: "Active",
         },
       });
-      // console.log(result);
 
       const token = generateToken(result.id, name, email);
       console.log(token);
@@ -75,8 +74,8 @@ router.post("/register", async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ error: error.message });
+    console.log(error.message);
+    return res.status(400).json({ message: "Something went wrong !" });
   } finally {
     async () => {
       await prisma.$disconnect();
@@ -86,8 +85,6 @@ router.post("/register", async (req, res) => {
 
 router.post("/signin", userSignInValidator(), async (req, res) => {
   const { mobile, password } = req.body;
-  console.log(mobile, password);
-
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -121,8 +118,8 @@ router.post("/signin", userSignInValidator(), async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ message: error.message });
+    console.log(error.message);
+    return res.status(400).json({ message: "Something went wrong !" });
   } finally {
     async () => {
       await prisma.$disconnect();
@@ -167,8 +164,8 @@ router.post("/password/update", async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ error: error.message });
+    console.log(error.message);
+    return res.status(400).json({ message: "Something went wrong !" });
   } finally {
     async () => {
       await prisma.$disconnect();
@@ -185,7 +182,7 @@ router.post("/profile/update", async (req, res) => {
     });
   });
 
-  console.log(data);
+  // console.log(data);
   try {
     if (Object.keys(data.files).length > 0) {
       const docContent = await fs.promises
@@ -200,41 +197,42 @@ router.post("/profile/update", async (req, res) => {
 
       await prisma.user.update({
         where: {
-          mobile: data.fields.mobile,
+          mobile: data.fields.userMobile,
         },
         data: {
           image: uploadResult.secure_url,
-          name: data.fields.name,
+          name: data.fields.userName,
         },
       });
-      return res
-        .status(200)
-        .json({ image_url: uploadResult.secure_url, name: data.fields.name });
+      return res.status(200).json({
+        image_url: uploadResult.secure_url,
+        name: data.fields.userName,
+      });
     } else {
-      const image_url = await prisma.user.findFirst({
+      const imageUrl = await prisma.user.findFirst({
         where: {
-          mobile: data.fields.mobile,
+          mobile: data.fields.userMobile,
         },
         select: {
           image: true,
         },
       });
-      console.log(image_url);
+      // console.log(imageUrl.image);
       await prisma.user.update({
         where: {
-          mobile: data.fields.mobile,
+          mobile: data.fields.userMobile,
         },
         data: {
-          name: data.fields.name,
+          name: data.fields.userName,
         },
       });
       return res
         .status(200)
-        .json({ image_url: image_url, name: data.fields.name });
+        .json({ image_url: imageUrl.image, name: data.fields.userName });
     }
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ error: error.message });
+    console.log(error.message);
+    return res.status(400).json({ message: "Something went wrong" });
   } finally {
     async () => {
       await prisma.$disconnect();

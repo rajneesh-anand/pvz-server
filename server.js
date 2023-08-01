@@ -12,7 +12,9 @@ const app = express();
 // const port = process.env.PORT || 8800;
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.urlencoded({ parameterLimit: 100000, limit: "50mb", extended: true })
+);
 app.set("view engine", "ejs");
 app.set("views", "views");
 
@@ -48,6 +50,8 @@ app.use("/api/coin", coin);
 app.use("/api/product", product);
 app.use("/api/message", message);
 
-app.listen(8800, () => {
+var server = app.listen(8800, () => {
   console.log(`Server is running on port 8800`);
 });
+
+server.setTimeout(1000 * 60 * 5);

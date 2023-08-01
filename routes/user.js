@@ -182,7 +182,7 @@ router.post("/profile/update", async (req, res) => {
     });
   });
 
-  // console.log(data);
+  console.log(data);
   try {
     if (Object.keys(data.files).length > 0) {
       const docContent = await fs.promises
@@ -231,7 +231,8 @@ router.post("/profile/update", async (req, res) => {
         .json({ image_url: imageUrl.image, name: data.fields.userName });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(`first`);
+    console.log(error);
     return res.status(400).json({ message: "Something went wrong" });
   } finally {
     async () => {

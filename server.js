@@ -9,18 +9,14 @@ const message = require("./routes/message");
 require("dotenv").config();
 
 const app = express();
-// const port = process.env.PORT || 4040;
+// const port = process.env.PORT || 8800;
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-let allowedDomains = [
-  "http://localhost:8800",
-  "194.67.90.60",
-  "127.0.0.1:8800",
-];
+let allowedDomains = ["http://localhost:8800", "http://194.67.90.60:8800"];
 
 app.use(
   cors({

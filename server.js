@@ -9,7 +9,7 @@ const message = require("./routes/message");
 require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 4040;
+// const port = process.env.PORT || 4040;
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -17,10 +17,9 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 let allowedDomains = [
-  "http://localhost:3000",
-  "http://localhost:4040",
-  "http://194.67.90.60:4040",
-  "127.0.0.1:4040",
+  "http://localhost:8800",
+  "194.67.90.60",
+  "127.0.0.1:8800",
 ];
 
 app.use(
@@ -49,6 +48,6 @@ app.use("/api/coin", coin);
 app.use("/api/product", product);
 app.use("/api/message", message);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(8800, () => {
+  console.log(`Server is running on port 8800`);
 });

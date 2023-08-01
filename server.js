@@ -41,7 +41,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-  res.render("index", { message: null });
+  res.render("pages/index", { message: null });
 });
 app.use("/api/user", user);
 app.use("/api/coin", coin);

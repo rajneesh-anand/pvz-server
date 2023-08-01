@@ -16,7 +16,11 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-let allowedDomains = ["http://localhost:8800", "http://194.67.90.60:8800"];
+let allowedDomains = [
+  "http://localhost:8800",
+  "http://194.67.90.60:8800",
+  "http://194.67.90.60",
+];
 
 app.use(
   cors({

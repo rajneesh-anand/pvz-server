@@ -53,7 +53,7 @@ router.post("/redeem", async (req, res) => {
         email: email,
         product: product,
         productValue: productValue,
-        redeemCode: RedeemCode.toUpperCase(),
+        redeemCode: RedeemCode,
         redeemStatus: "Created",
       },
     });
@@ -64,6 +64,96 @@ router.post("/redeem", async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(400).json({ error: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.get("/redeem-list", async (req, res) => {
+  let page = req.query.page;
+  let limit = req.query.limit;
+  try {
+    const results = await prisma.redeem.findMany({
+      skip: page == 1 ? 0 : Number(page) * 50,
+      take: Number(limit),
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      data: results,
+      message: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.get("/redeem/:code/:mobile", async (req, res) => {
+  const code = req.params.code;
+  const mobile = req.params.mobile;
+  console.log(code);
+  console.log(mobile);
+
+  try {
+    const result = await prisma.redeem.findFirst({
+      where: {
+        AND: [
+          {
+            redeemCode: code,
+          },
+          { mobile: mobile },
+        ],
+      },
+    });
+
+    console.log(result);
+
+    return res.status(200).json({
+      data: result,
+      message: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.post("/order/status", async (req, res) => {
+  const { code, mobile } = req.body;
+
+  console.log(code);
+  console.log(mobile);
+
+  try {
+    await prisma.redeem.update({
+      where: {
+        redeemCode: code,
+      },
+      data: {
+        redeemStatus: "Received",
+        receivedAt: new Date(),
+      },
+    });
+
+    return res.status(200).json({
+      message: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
   } finally {
     async () => {
       await prisma.$disconnect();

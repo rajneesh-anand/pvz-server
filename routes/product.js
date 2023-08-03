@@ -3,11 +3,6 @@ const path = require("path");
 const fs = require("fs/promises");
 
 const router = express.Router();
-// router.get("/all-products", (req, res) => {
-//   res.statusCode = 200;
-//   res.header("Content-Type", "application/json");
-//   res.sendFile(path.join(__dirname, "../upload/products.json"));
-// });
 
 router.get("/all-products", async (req, res) => {
   try {

@@ -272,4 +272,32 @@ router.get("/gifts/:mobile", async (req, res) => {
   }
 });
 
+router.get("/user-list", async (req, res) => {
+  let page = req.query.page;
+  let limit = req.query.limit;
+
+  try {
+    const result = await prisma.user.findMany({
+      skip: page == 1 ? 0 : Number(page) * 50,
+      take: Number(limit),
+      // orderBy: {
+      //   id: "desc",
+      // },
+    });
+    console.log(result);
+
+    return res.status(200).json({
+      totalCount: result.length,
+      users: result,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
 module.exports = router;

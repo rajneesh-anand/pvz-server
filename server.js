@@ -19,7 +19,7 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 let allowedDomains = [
-  "http://localhost:8800",
+  "http://localhost:3000",
   "http://194.67.90.60:8800",
   "http://194.67.90.60",
 ];

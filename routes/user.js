@@ -29,7 +29,7 @@ const generateToken = (_id, name, email) => {
 };
 
 router.post("/register", async (req, res) => {
-  const { mobile, email, password, name } = req.body;
+  const { mobile, email, password, name, fcmToken } = req.body;
 
   try {
     const userExits = await prisma.user.count({
@@ -52,6 +52,7 @@ router.post("/register", async (req, res) => {
           name: name,
           password: hashedPassword,
           mobile: mobile,
+          fcmToken: fcmToken,
           image:
             "https://res.cloudinary.com/dlywo5mxn/image/upload/v1689572976/afed80130a2682f1a428984ed8c84308_wscf7t.jpg",
           userType: "Customer",
@@ -84,30 +85,38 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/signin", userSignInValidator(), async (req, res) => {
-  const { mobile, password } = req.body;
+  console.log(req.body);
+  const { mobile, password, fcmToken } = req.body;
   try {
-    const user = await prisma.user.findUnique({
+    const result = await prisma.user.findUnique({
       where: {
         mobile: mobile,
       },
     });
 
-    if (user) {
-      const passwordMatch = await compare(password, user.password);
+    if (result) {
+      const passwordMatch = await compare(password, result.password);
       if (!passwordMatch) {
         return res.status(403).json({
           message: "Неверный пароль!",
         });
       } else {
-        const token = generateToken(user.id, user.name, user.email);
-        console.log(token);
+        const token = generateToken(result.id, result.name, result.email);
+        await prisma.user.update({
+          where: {
+            mobile: mobile,
+          },
+          data: {
+            fcmToken: fcmToken,
+          },
+        });
         return res.status(200).json({
           user: {
-            id: user.id,
-            username: user.name,
-            email: user.email,
-            mobile: user.mobile,
-            image: user.image,
+            id: result.id,
+            username: result.name,
+            email: result.email,
+            mobile: result.mobile,
+            image: result.image,
           },
           token,
         });
@@ -255,10 +264,10 @@ router.get("/gifts/:mobile", async (req, res) => {
         productValue: true,
         redeemCode: true,
         redeemStatus: true,
-        date: true,
+        createdAt: true,
       },
       orderBy: {
-        date: "desc",
+        createdAt: "desc",
       },
     });
     return res.status(200).json({ results });
@@ -298,6 +307,27 @@ router.get("/user-list", async (req, res) => {
       await prisma.$disconnect();
     };
   }
+});
+
+router.post("/fcm/token", async (req, res) => {
+  console.log(req.body);
+
+  // try {
+  //   const result = await prisma.user.findMany({});
+  //   console.log(result);
+
+  //   return res.status(200).json({
+  //     totalCount: result.length,
+  //     users: result,
+  //   });
+  // } catch (error) {
+  //   console.log(error);
+  //   return res.status(400).json({ error: error.message });
+  // } finally {
+  //   async () => {
+  //     await prisma.$disconnect();
+  //   };
+  // }
 });
 
 module.exports = router;

@@ -1,6 +1,15 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
 
+const admin = require("firebase-admin");
+const { getMessaging } = require("firebase-admin/messaging");
+const serviceAccount = require("../serviceAccountKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+const messaging = getMessaging();
+
 const router = express.Router();
 
 router.get("/user-coins/:mobileId/:skip", async (req, res) => {
@@ -158,6 +167,78 @@ router.post("/order/status", async (req, res) => {
     async () => {
       await prisma.$disconnect();
     };
+  }
+});
+
+router.post("/earned", async (req, res) => {
+  const { amount, mobile, orderNumber } = req.body;
+
+  try {
+    const userExits = await prisma.user.findUnique({
+      where: {
+        mobile: mobile,
+      },
+    });
+
+    if (userExits != null) {
+      const coinEarnedValue = (Number(amount) * 2) / 100;
+      const earnedCoins = Math.round(coinEarnedValue);
+      await prisma.coin.create({
+        data: {
+          name: userExits.name,
+          mobile: userExits.mobile,
+          email: userExits.email,
+          orderNumber: orderNumber,
+          earnedCoin: earnedCoins >= 100 ? 100 : earnedCoins,
+        },
+      });
+
+      const message = {
+        notification: {
+          title: "Hurrah, You won coins",
+          body: `Congratulations ! you have won ${earnedCoins} coins`,
+        },
+        token: userExits.fcmToken,
+      };
+
+      const response = await messaging.send(message);
+      console.log(response);
+      return res.status(200).json({
+        message: "success",
+      });
+    } else {
+      return res.status(403).json({
+        message: "Mobile Number does not exist !",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.post("/post-message", async (req, res) => {
+  const { title, message } = req.body;
+
+  const topic = "yandexpvz";
+  const fcm_message = {
+    notification: {
+      title: title,
+      body: message,
+    },
+    topic: topic,
+  };
+  try {
+    const response = await messaging.send(fcm_message);
+    console.log(response);
+    return res.status(200).json({ message: "success" });
+  } catch (error) {
+    console.log("Error sending message:", error.message);
+    return res.status(400).json({ message: error.message });
   }
 });
 

@@ -71,6 +71,7 @@ model Coin {
    name          String
    mobile        String
    email         String?
+   orderNumber   String?
    earnedCoin    Int @default(0)
    spentCoin     Int @default(0)
    createdAt     DateTime  @default(now()) 
@@ -90,6 +91,7 @@ model User {
   image         String?
   userType      String?  
   userStatus    String?
+  fcmToken      String?
   createdAt     DateTime  @default(now())
   
   accounts      Account[]

@@ -15,8 +15,6 @@ app.use(express.json());
 app.use(
   express.urlencoded({ parameterLimit: 100000, limit: "50mb", extended: true })
 );
-app.set("view engine", "ejs");
-app.set("views", "views");
 
 let allowedDomains = [
   "http://localhost:3000",

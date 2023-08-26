@@ -193,8 +193,8 @@ router.post("/earned", async (req, res) => {
 
       const message = {
         notification: {
-          title: "Hurrah, You won coins",
-          body: `Congratulations ! you have won ${earnedCoins} coins`,
+          title: `Ура! вы выиграли ${earnedCoins} монет`,
+          body: `Дорогой ${userExits.name}, Вы заработали ${earnedCoins} монет. продолжайте зарабатывать больше. С наилучшими пожеланиями !`,
         },
         token: userExits.fcmToken,
       };

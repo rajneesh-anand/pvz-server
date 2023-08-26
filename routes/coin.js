@@ -109,8 +109,6 @@ router.get("/redeem-list", async (req, res) => {
 router.get("/redeem/:code/:mobile", async (req, res) => {
   const code = req.params.code;
   const mobile = req.params.mobile;
-  console.log(code);
-  console.log(mobile);
 
   try {
     const result = await prisma.redeem.findFirst({

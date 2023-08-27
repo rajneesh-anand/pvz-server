@@ -191,6 +191,7 @@ router.post("/create", async (req, res) => {
         coinValue: Number(data.fields.coinValue),
         status: data.fields.status,
         inStock: Number(data.fields.inStock),
+        category: data.fields.status,
       },
     });
 
@@ -236,6 +237,7 @@ router.post("/edit/:id", async (req, res) => {
           coinValue: Number(data.fields.coinValue),
           status: data.fields.status,
           inStock: Number(data.fields.inStock),
+          category: data.fields.status,
         },
       });
     } else {
@@ -250,6 +252,7 @@ router.post("/edit/:id", async (req, res) => {
           coinValue: Number(data.fields.coinValue),
           status: data.fields.status,
           inStock: Number(data.fields.inStock),
+          category: data.fields.status,
         },
       });
     }

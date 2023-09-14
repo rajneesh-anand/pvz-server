@@ -18,6 +18,7 @@ app.use(
 
 let allowedDomains = [
   "http://localhost:3000",
+  "http://185.46.11.105",
   "http://185.46.11.105:8800",
   "http://185.46.11.105:3000",
 ];

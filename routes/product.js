@@ -49,6 +49,9 @@ router.get("/all-products", async (req, res) => {
 router.get("/products-list", async (req, res) => {
   try {
     const products = await prisma.product.findMany({
+      where: {
+        status: "Active",
+      },
       select: {
         id: true,
         name: true,

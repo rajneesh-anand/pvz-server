@@ -122,7 +122,7 @@ router.get("/redeem/:code/:mobile", async (req, res) => {
       },
     });
 
-    console.log(result);
+    // console.log(result);
 
     return res.status(200).json({
       data: result,
@@ -237,6 +237,44 @@ router.post("/post-message", async (req, res) => {
   } catch (error) {
     console.log("Error sending message:", error.message);
     return res.status(400).json({ message: error.message });
+  }
+});
+
+router.post("/user/message", async (req, res) => {
+  const { title, mobile, description } = req.body;
+  // console.log(title);
+  // console.log(mobile);
+  // console.log(description);
+
+  try {
+    const userExits = await prisma.user.findUnique({
+      where: {
+        mobile: mobile,
+      },
+    });
+
+    if (userExits != null) {
+      const message = {
+        notification: {
+          title: `${title}`,
+          body: `${description}`,
+        },
+        token: userExits.fcmToken,
+      };
+
+      const response = await messaging.send(message);
+      console.log(response);
+      return res.status(200).json({
+        message: "success",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
   }
 });
 

@@ -289,11 +289,11 @@ router.get("/user-list", async (req, res) => {
     const result = await prisma.user.findMany({
       skip: page == 1 ? 0 : Number(page) * 50,
       take: Number(limit),
-      // orderBy: {
-      //   id: "desc",
-      // },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-    console.log(result);
+    // console.log(result);
 
     return res.status(200).json({
       totalCount: result.length,

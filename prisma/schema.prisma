@@ -115,3 +115,15 @@ model User {
   sessions      Session[]
   verificationTokens    VerificationToken[]
 }
+
+
+model Feedback {
+   id            Int   @id @default(autoincrement())
+   name          String
+   mobile        String
+   email         String?
+   message       String
+   category      String
+   messagePhoto   String?
+   createdAt     DateTime  @default(now()) 
+}

@@ -330,4 +330,59 @@ router.post("/fcm/token", async (req, res) => {
   // }
 });
 
+router.post("/feedback", async (req, res) => {
+  const data = await new Promise((resolve, reject) => {
+    const form = new IncomingForm();
+    form.parse(req, (err, fields, files) => {
+      if (err) return reject(err);
+      resolve({ fields, files });
+    });
+  });
+
+  // console.log(data);
+  try {
+    if (Object.keys(data.files).length > 0) {
+      const docContent = await fs.promises
+        .readFile(data.files.image.path)
+        .catch((err) => console.error("Failed to read file", err));
+
+      let doc64 = parser.format(
+        path.extname(data.files.image.name).toString(),
+        docContent
+      );
+      const uploadResult = await cloudinaryUpload(doc64.content);
+
+      await prisma.feedback.create({
+        data: {
+          name: data.fields.userName,
+          mobile: data.fields.userMobile,
+          message: data.fields.message,
+          category: data.fields.message,
+          messagePhoto: uploadResult.secure_url,
+        },
+      });
+      return res.status(200).json({
+        message: "feedback saved",
+      });
+    } else {
+      await prisma.feedback.create({
+        data: {
+          name: data.fields.userName,
+          mobile: data.fields.userMobile,
+          message: data.fields.message,
+          category: data.fields.message,
+        },
+      });
+      return res.status(200).json({ message: "feedback saved" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: "Something went wrong" });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
 module.exports = router;

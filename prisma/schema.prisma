@@ -114,6 +114,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   verificationTokens    VerificationToken[]
+  feedbacks    Feedback[]
 }
 
 
@@ -124,6 +125,8 @@ model Feedback {
    email         String?
    message       String
    category      String
-   messagePhoto   String?
+   messagePhoto  String?
+   status        String @default("Created") 
    createdAt     DateTime  @default(now()) 
+   photo         User @relation(fields: [mobile], references: [mobile])
 }

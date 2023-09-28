@@ -357,7 +357,8 @@ router.post("/feedback", async (req, res) => {
           name: data.fields.userName,
           mobile: data.fields.userMobile,
           message: data.fields.message,
-          category: data.fields.message,
+          category: data.fields.category,
+          status: "Created",
           messagePhoto: uploadResult.secure_url,
         },
       });
@@ -370,7 +371,8 @@ router.post("/feedback", async (req, res) => {
           name: data.fields.userName,
           mobile: data.fields.userMobile,
           message: data.fields.message,
-          category: data.fields.message,
+          category: data.fields.category,
+          status: "Created",
         },
       });
       return res.status(200).json({ message: "feedback saved" });

@@ -242,9 +242,6 @@ router.post("/post-message", async (req, res) => {
 
 router.post("/user/message", async (req, res) => {
   const { title, mobile, description } = req.body;
-  // console.log(title);
-  // console.log(mobile);
-  // console.log(description);
 
   try {
     const userExits = await prisma.user.findUnique({

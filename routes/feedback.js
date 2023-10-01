@@ -36,6 +36,38 @@ router.get("/list", async (req, res) => {
   }
 });
 
+router.get("/published-list", async (req, res) => {
+  try {
+    const result = await prisma.feedback.findMany({
+      take: 5,
+      where: {
+        status: "Published",
+      },
+      include: {
+        photo: {
+          select: {
+            image: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return res.status(200).json({
+      message: "success",
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
 router.get("/detail/:id", async (req, res) => {
   const id = req.params.id;
 

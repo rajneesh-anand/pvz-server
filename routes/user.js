@@ -339,7 +339,6 @@ router.post("/feedback", async (req, res) => {
     });
   });
 
-  // console.log(data);
   try {
     if (Object.keys(data.files).length > 0) {
       const docContent = await fs.promises

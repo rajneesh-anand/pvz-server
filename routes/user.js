@@ -1,5 +1,6 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
+const { messaging } = require("../lib/firebase");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const { hash, genSalt, compare } = require("bcrypt");
@@ -61,7 +62,18 @@ router.post("/register", async (req, res) => {
       });
 
       const token = generateToken(result.id, name, email);
-      console.log(token);
+      // console.log(token);
+
+      const message = {
+        notification: {
+          title: `Добро пожаловать ${name}`,
+          body: `Спасибо, что присоединились к приложению Яша !`,
+        },
+        token: fcmToken,
+      };
+
+      const response = await messaging.send(message);
+      console.log(response);
 
       return res.status(200).json({
         user: {
@@ -330,55 +342,34 @@ router.post("/fcm/token", async (req, res) => {
   // }
 });
 
-router.post("/feedback", async (req, res) => {
-  const data = await new Promise((resolve, reject) => {
-    const form = new IncomingForm();
-    form.parse(req, (err, fields, files) => {
-      if (err) return reject(err);
-      resolve({ fields, files });
-    });
-  });
+router.post("/message", async (req, res) => {
+  const { title, mobile, description } = req.body;
 
   try {
-    if (Object.keys(data.files).length > 0) {
-      const docContent = await fs.promises
-        .readFile(data.files.image.path)
-        .catch((err) => console.error("Failed to read file", err));
+    const userExits = await prisma.user.findUnique({
+      where: {
+        mobile: mobile,
+      },
+    });
 
-      let doc64 = parser.format(
-        path.extname(data.files.image.name).toString(),
-        docContent
-      );
-      const uploadResult = await cloudinaryUpload(doc64.content);
-
-      await prisma.feedback.create({
-        data: {
-          name: data.fields.userName,
-          mobile: data.fields.userMobile,
-          message: data.fields.message,
-          category: data.fields.category,
-          status: "Created",
-          messagePhoto: uploadResult.secure_url,
+    if (userExits != null) {
+      const message = {
+        notification: {
+          title: `${title}`,
+          body: `${description}`,
         },
-      });
+        token: userExits.fcmToken,
+      };
+
+      const response = await messaging.send(message);
+      console.log(response);
       return res.status(200).json({
-        message: "feedback saved",
+        message: "success",
       });
-    } else {
-      await prisma.feedback.create({
-        data: {
-          name: data.fields.userName,
-          mobile: data.fields.userMobile,
-          message: data.fields.message,
-          category: data.fields.category,
-          status: "Created",
-        },
-      });
-      return res.status(200).json({ message: "feedback saved" });
     }
   } catch (error) {
     console.log(error);
-    return res.status(400).json({ message: "Something went wrong" });
+    return res.status(400).json({ message: error.message });
   } finally {
     async () => {
       await prisma.$disconnect();

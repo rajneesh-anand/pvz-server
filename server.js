@@ -6,6 +6,7 @@ const coin = require("./routes/coin");
 const product = require("./routes/product");
 const message = require("./routes/message");
 const feedback = require("./routes/feedback");
+const item = require("./routes/item");
 
 require("dotenv").config();
 
@@ -51,6 +52,7 @@ app.use("/api/coin", coin);
 app.use("/api/product", product);
 app.use("/api/message", message);
 app.use("/api/feedback", feedback);
+app.use("/api/item", item);
 
 var server = app.listen(8800, () => {
   console.log(`Server is running on port 8800`);

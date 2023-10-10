@@ -64,16 +64,17 @@ router.post("/register", async (req, res) => {
       const token = generateToken(result.id, name, email);
       // console.log(token);
 
-      const message = {
-        notification: {
-          title: `Добро пожаловать ${name}`,
-          body: `Спасибо, что присоединились к приложению Яша !`,
-        },
-        token: fcmToken,
-      };
-
-      const response = await messaging.send(message);
-      console.log(response);
+      if (fcmToken != "") {
+        const message = {
+          notification: {
+            title: `Добро пожаловать ${name}`,
+            body: `Спасибо, что присоединились к приложению Яша !`,
+          },
+          token: fcmToken,
+        };
+        const response = await messaging.send(message);
+        console.log(response);
+      }
 
       return res.status(200).json({
         user: {
@@ -97,7 +98,6 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/signin", userSignInValidator(), async (req, res) => {
-  console.log(req.body);
   const { mobile, password, fcmToken } = req.body;
   try {
     const result = await prisma.user.findUnique({
@@ -367,6 +367,47 @@ router.post("/message", async (req, res) => {
         message: "success",
       });
     }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.get("/coinbalance/:mobile", async (req, res) => {
+  const mobileNumber = req.params.mobile;
+
+  try {
+    const earnedCoins = await prisma.coin.aggregate({
+      _sum: {
+        earnedCoin: true,
+      },
+      where: {
+        mobile: mobileNumber,
+      },
+    });
+
+    const spentCoins = await prisma.coin.aggregate({
+      _sum: {
+        spentCoin: true,
+      },
+      where: {
+        mobile: mobileNumber,
+      },
+    });
+
+    const earned = earnedCoins._sum.earnedCoin;
+    const spent = spentCoins._sum.spentCoin;
+    const balancedCoins = earned - spent;
+    console.log(balancedCoins);
+
+    return res.status(200).json({
+      message: "success",
+      balancedCoins: balancedCoins,
+    });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: error.message });

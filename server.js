@@ -22,9 +22,11 @@ let allowedDomains = [
   "http://localhost:3000",
   "http://localhost:4000",
   "https://admin.yasha64.ru",
+  "https://app.yasha64.ru",
   "https://yasha64.ru",
   "https://www.yasha64.ru",
   "http://185.46.11.105:4000",
+  "http://185.46.11.105:5000",
   "http://185.46.11.105:8800",
   "http://185.46.11.105:3000",
 ];

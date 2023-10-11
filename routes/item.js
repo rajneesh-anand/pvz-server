@@ -3,8 +3,8 @@ const prisma = require("../lib/prisma");
 
 const router = express.Router();
 
-const APP_URL = "http://localhost:8800/api";
-// const APP_URL = "https://api.geenia.in/api";
+// const APP_URL = "http://localhost:8800/api";
+const APP_URL = "https://yasha64.ru/api";
 
 function paginate(totalItems, currentPage, pageSize, count, url) {
   const totalPages = Math.ceil(totalItems / pageSize);

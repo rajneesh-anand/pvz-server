@@ -109,12 +109,12 @@ model User {
   userType      String?  
   userStatus    String?
   fcmToken      String?
-  createdAt     DateTime  @default(now())
-  
+  createdAt     DateTime  @default(now())  
   accounts      Account[]
   sessions      Session[]
   verificationTokens    VerificationToken[]
   feedbacks    Feedback[]
+  blogs        Blog[]
 }
 
 
@@ -129,4 +129,24 @@ model Feedback {
    status        String @default("Created") 
    createdAt     DateTime  @default(now()) 
    photo         User @relation(fields: [mobile], references: [mobile])
+}
+
+
+
+model Blog {
+  id            Int    @id @default(autoincrement()) 
+  title         String @unique
+  description   String?
+  slug          String
+  content       String
+  category      String
+  subCategory   String? 
+  tags          String?
+  image         String?
+  readingTime   String? 
+  status        String @default("Published") 
+  createdAt     DateTime  @default(now()) 
+  author        User?   @relation(fields: [authorId], references: [id])
+  authorId      String?
+ 
 }

@@ -195,7 +195,7 @@ router.post("/earned", async (req, res) => {
       const message = {
         notification: {
           title: `Ура! вы выиграли ${earnedCoins} монет`,
-          body: `Дорогой ${userExits.name}, Вы заработали ${earnedCoins} монет. продолжайте зарабатывать больше. С наилучшими пожеланиями !`,
+          body: `Дорогой ${userExits.name}, Вы заработали ${earnedCoins} монет за заказ номер ${orderNumber}. Монеты будут добавлены в ваш кошелек в течение 12 часов. продолжайте зарабатывать больше. С наилучшими пожеланиями !`,
         },
         token: userExits.fcmToken,
       };

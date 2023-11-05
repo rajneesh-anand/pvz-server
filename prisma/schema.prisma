@@ -150,3 +150,20 @@ model Blog {
   authorId      String?
  
 }
+
+
+model Item {
+   id             Int   @id @default(autoincrement())
+   name           String @unique 
+   link           String 
+   marketPlace    String?
+   category       String?
+   image          String?
+   inStock        Int @default(0)
+   salePrice      Int  @default(0)
+   price          Int  @default(0)
+   discount       Int  @default(0)
+   status         String @default("Active")
+   createdAt      DateTime  @default(now())  
+}
+

@@ -130,7 +130,7 @@ router.get("/items-list", async (req, res) => {
   try {
     const items = await prisma.item.findMany({
       where: {
-        status: "Active",
+        status: `{"label":"Active","value":"Active"}`,
       },
       select: {
         id: true,

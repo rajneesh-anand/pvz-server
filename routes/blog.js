@@ -1,4 +1,5 @@
 const express = require("express");
+const verifyAuth = require("../middleware/auth");
 const prisma = require("../lib/prisma");
 const path = require("path");
 const fs = require("fs/promises");
@@ -60,7 +61,40 @@ function paginate(totalItems, currentPage, pageSize, count, url) {
   };
 }
 
-router.get("/list", async (req, res) => {
+router.get("/blogs-list", async (req, res) => {
+  try {
+    const products = await prisma.blog.findMany({
+      where: {
+        status: "Published",
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        content: true,
+        category: true,
+        image: true,
+        readingTime: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      results: products,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json({ message: "Something went wrong !" });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.get("/list", verifyAuth, async (req, res) => {
   const curPage = req.query.page || 1;
   const perPage = req.query.limit || 25;
 
@@ -80,6 +114,7 @@ router.get("/list", async (req, res) => {
         description: true,
         image: true,
         status: true,
+        createdAt: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -109,17 +144,15 @@ router.post("/create", async (req, res) => {
     });
   });
 
-  console.log(data);
-
   const imageUrl =
     Object.keys(data.files).length > 0
       ? await uploadFileToCloudinary(data.files.image)
       : null;
 
   try {
-    await prisma.product.create({
+    await prisma.blog.create({
       data: {
-        title: data.fields.name,
+        title: data.fields.title,
         slug: data.fields.slug,
         description: data.fields.description,
         image: imageUrl
@@ -142,4 +175,114 @@ router.post("/create", async (req, res) => {
     };
   }
 });
+
+router.get("/edit/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const result = await prisma.blog.findFirst({
+      where: {
+        id: Number(id),
+      },
+    });
+
+    return res.status(200).json({
+      data: result,
+      message: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.post("/edit/:id", async (req, res) => {
+  const id = req.params.id;
+  const data = await new Promise((resolve, reject) => {
+    const form = new IncomingForm();
+    form.parse(req, (err, fields, files) => {
+      if (err) return reject(err);
+      resolve({ fields, files });
+    });
+  });
+
+  const imageUrl =
+    Object.keys(data.files).length > 0
+      ? await uploadFileToCloudinary(data.files.image)
+      : null;
+
+  try {
+    if (Object.keys(data.files).length > 0) {
+      await prisma.blog.update({
+        where: {
+          id: Number(id),
+        },
+
+        data: {
+          title: data.fields.title,
+          slug: data.fields.slug,
+          description: data.fields.description,
+          image: imageUrl.secure_url,
+          content: data.fields.content,
+          category: data.fields.category,
+          subCategory: data.fields.subCategory,
+        },
+      });
+    } else {
+      await prisma.blog.update({
+        where: {
+          id: Number(id),
+        },
+        data: {
+          title: data.fields.title,
+          slug: data.fields.slug,
+          description: data.fields.description,
+          content: data.fields.content,
+          category: data.fields.category,
+          subCategory: data.fields.subCategory,
+        },
+      });
+    }
+
+    return res.status(200).json({ message: "success" });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.post("/status", async (req, res) => {
+  const { id, status } = req.body;
+
+  try {
+    await prisma.blog.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        status: status,
+      },
+    });
+
+    return res.status(200).json({
+      message: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
 module.exports = router;

@@ -24,8 +24,15 @@ cloudinary.config({
 const cloudinaryUpload = (file) => cloudinary.uploader.upload(file);
 
 const generateToken = (_id, name, email) => {
-  return jwt.sign({ _id, name, email }, process.env.TOKEN_SECRET, {
-    expiresIn: "3d",
+  const jwtClaims = {
+    id: _id,
+    name: name,
+    email: email,
+    iat: Date.now() / 1000,
+    exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+  };
+  return jwt.sign(jwtClaims, process.env.SECRET, {
+    algorithm: "HS256",
   });
 };
 

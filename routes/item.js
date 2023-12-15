@@ -19,7 +19,36 @@ const uploadFileToCloudinary = async (file) => {
     .catch((err) => console.error("Failed to read file", err));
   const doc64 = parser.format(path.extname(file.name).toString(), docContent);
   const uploadResult = await cloudinary.uploader.upload(doc64.content);
-  return uploadResult;
+  return uploadResult.secure_url;
+};
+
+const uploadMultipleFilesToCloudinary = async (files) => {
+  if (Array.isArray(files)) {
+    const photoLinks = files.map(async (file) => {
+      const docContent = await fs
+        .readFile(file.path)
+        .catch((err) => console.error("Failed to read file", err));
+      const doc64 = parser.format(
+        path.extname(file.name).toString(),
+        docContent
+      );
+      const uploadResult = await cloudinary.uploader.upload(doc64.content);
+      return uploadResult.secure_url;
+    });
+    return Promise.all(photoLinks);
+  } else {
+    const photoLinks = [];
+    const docContent = await fs
+      .readFile(files.path)
+      .catch((err) => console.error("Failed to read file", err));
+    const doc64 = parser.format(
+      path.extname(files.name).toString(),
+      docContent
+    );
+    const uploadResult = await cloudinary.uploader.upload(doc64.content);
+    photoLinks.push(uploadResult.secure_url);
+    return Promise.all(photoLinks);
+  }
 };
 
 const router = express.Router();
@@ -101,10 +130,11 @@ function paginate(totalItems, currentPage, pageSize, count, url) {
 // });
 
 router.get("/list", async (req, res) => {
-  let page = req.query.page;
-  let limit = 25;
+  let page = req.query.page || 1;
+  let limit = req.query.limit || 25;
 
   try {
+    const totalItems = await prisma.item.count();
     const items = await prisma.item.findMany({
       skip: page == 1 ? 0 : Number(page) * 50,
       take: Number(limit),
@@ -115,6 +145,7 @@ router.get("/list", async (req, res) => {
 
     return res.status(200).json({
       data: items,
+      totalRecords: totalItems,
     });
   } catch (error) {
     console.log(error);
@@ -135,9 +166,11 @@ router.get("/items-list", async (req, res) => {
       select: {
         id: true,
         name: true,
+        slug: true,
         price: true,
         salePrice: true,
         discount: true,
+        gallery: true,
         image: true,
         marketPlace: true,
         inStock: true,
@@ -161,7 +194,7 @@ router.get("/items-list", async (req, res) => {
 
 router.post("/create", async (req, res) => {
   const data = await new Promise((resolve, reject) => {
-    const form = new IncomingForm();
+    const form = new IncomingForm({ multiples: true });
     form.parse(req, (err, fields, files) => {
       if (err) return reject(err);
       resolve({ fields, files });
@@ -171,31 +204,40 @@ router.post("/create", async (req, res) => {
   // console.log(data);
 
   const imageUrl =
-    Object.keys(data.files).length > 0
-      ? await uploadFileToCloudinary(data.files.image)
-      : null;
+    data.fields.image === "null"
+      ? "https://res.cloudinary.com/dlywo5mxn/image/upload/v1693041477/no-image_b3mfoq.png"
+      : await uploadFileToCloudinary(data.files.image);
+
+  // console.log(imageUrl);
+
+  const galleryLinks =
+    data.fields.gallery === "null"
+      ? ""
+      : await uploadMultipleFilesToCloudinary(data.files.gallery);
+
+  // console.log(galleryLinks);
 
   const discount =
     ((Number(data.fields.price) - Number(data.fields.salePrice)) /
       Number(data.fields.price)) *
     100;
-  console.log(discount);
 
   try {
     await prisma.item.create({
       data: {
         name: data.fields.name,
-        link: data.fields.link,
         description: data.fields.description,
-        image: imageUrl
-          ? imageUrl.secure_url
-          : "https://res.cloudinary.com/dlywo5mxn/image/upload/v1693041477/no-image_b3mfoq.png",
-
+        link: data.fields.link,
+        image: imageUrl,
+        gallery: galleryLinks,
+        slug: data.fields.slug,
+        content: data.fields.content,
         price: Number(data.fields.price),
         salePrice: Number(data.fields.salePrice),
         discount: Math.round(discount),
         inStock: Number(data.fields.inStock),
         category: data.fields.category,
+        subCategory: data.fields.subCategory,
         status: data.fields.status,
         marketPlace: data.fields.marketPlace,
       },
@@ -215,7 +257,7 @@ router.post("/create", async (req, res) => {
 router.post("/edit/:id", async (req, res) => {
   const id = req.params.id;
   const data = await new Promise((resolve, reject) => {
-    const form = new IncomingForm();
+    const form = new IncomingForm({ multiples: true });
     form.parse(req, (err, fields, files) => {
       if (err) return reject(err);
       resolve({ fields, files });
@@ -225,55 +267,50 @@ router.post("/edit/:id", async (req, res) => {
   // console.log(data);
 
   const imageUrl =
-    Object.keys(data.files).length > 0
-      ? await uploadFileToCloudinary(data.files.image)
-      : null;
+    data.fields.image === "null"
+      ? data.fields.imageThumb
+      : await uploadFileToCloudinary(data.files.image);
+
+  const galleryLinks =
+    data.fields.gallery === "null"
+      ? []
+      : await uploadMultipleFilesToCloudinary(data.files.gallery);
+
+  const imageGalleryLink =
+    data.fields.gallery === "null"
+      ? JSON.parse(data.fields.imageGalley)
+      : galleryLinks.concat(JSON.parse(data.fields.imageGalley));
+
+  console.log(imageGalleryLink);
 
   const discount =
     ((Number(data.fields.price) - Number(data.fields.salePrice)) /
       Number(data.fields.price)) *
     100;
-  console.log(discount);
 
   try {
-    if (Object.keys(data.files).length > 0) {
-      await prisma.item.update({
-        where: {
-          id: Number(id),
-        },
-        data: {
-          name: data.fields.name,
-          link: data.fields.link,
-          description: data.fields.description,
-          image: imageUrl.secure_url,
-          price: Number(data.fields.price),
-          salePrice: Number(data.fields.salePrice),
-          discount: Math.round(discount),
-          inStock: Number(data.fields.inStock),
-          category: data.fields.category,
-          status: data.fields.status,
-          marketPlace: data.fields.marketPlace,
-        },
-      });
-    } else {
-      await prisma.item.update({
-        where: {
-          id: Number(id),
-        },
-        data: {
-          name: data.fields.name,
-          link: data.fields.link,
-          description: data.fields.description,
-          price: Number(data.fields.price),
-          salePrice: Number(data.fields.salePrice),
-          discount: Math.round(discount),
-          inStock: Number(data.fields.inStock),
-          category: data.fields.category,
-          status: data.fields.status,
-          marketPlace: data.fields.marketPlace,
-        },
-      });
-    }
+    await prisma.item.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        name: data.fields.name,
+        description: data.fields.description,
+        link: data.fields.link,
+        image: imageUrl,
+        gallery: imageGalleryLink,
+        slug: data.fields.slug,
+        content: data.fields.content,
+        price: Number(data.fields.price),
+        salePrice: Number(data.fields.salePrice),
+        discount: Math.round(discount),
+        inStock: Number(data.fields.inStock),
+        category: data.fields.category,
+        subCategory: data.fields.subCategory,
+        status: data.fields.status,
+        marketPlace: data.fields.marketPlace,
+      },
+    });
 
     return res.status(200).json({ message: "success" });
   } catch (error) {
@@ -299,6 +336,29 @@ router.get("/edit/:id", async (req, res) => {
     return res.status(200).json({ message: "success", data: result });
   } catch (error) {
     console.log(error.message);
+    return res.status(400).json({ message: error.message });
+  } finally {
+    async () => {
+      await prisma.$disconnect();
+    };
+  }
+});
+
+router.get("/search/:slug", async (req, res) => {
+  const slug = req.params.slug;
+
+  try {
+    const result = await prisma.item.findFirst({
+      where: {
+        slug: slug,
+      },
+    });
+
+    return res.status(200).json({
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(400).json({ message: error.message });
   } finally {
     async () => {

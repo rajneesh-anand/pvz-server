@@ -194,7 +194,7 @@ model Order {
   discount      String?
   shipping      String?
   totalAmount   String?
-  orderItem     Jsom[]
+  orderItem     Json
   orderStatus   String?
   paymentId     String?
   paymentStatus String?

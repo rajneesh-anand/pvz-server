@@ -1,6 +1,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -161,14 +162,44 @@ model Item {
    link           String? 
    marketPlace    String?
    category       String?
-   subCategory    String? 
+   subCategory    String[] 
+   unit           String?
+   ratings        String?
+   type           String?
    image          String?
-   gallery         String[]
+   gallery        String[]
    inStock        Int @default(0)
    salePrice      Int  @default(0)
    price          Int  @default(0)
    discount       Int  @default(0)
    status         String @default("Active")
-   createdAt      DateTime  @default(now())  
+   createdAt      DateTime  @default(now()) 
+   
+  @@index(fields: [name,category])
 }
+
+
+model Order {
+  id            Int     @default(autoincrement()) @id
+  orderNumber   String @unique
+  email         String
+  name          String
+  address       String?
+  city          String?
+  state         String?
+  pincode       String?
+  description   String?
+  mobile        String?
+  amount        String?
+  discount      String?
+  shipping      String?
+  totalAmount   String?
+  orderItem     Jsom[]
+  orderStatus   String?
+  paymentId     String?
+  paymentStatus String?
+  orderDate     DateTime  @default(now()) 
+  orderDispatchDate  DateTime?  
+}
+
 

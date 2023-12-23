@@ -201,7 +201,7 @@ router.post("/create", async (req, res) => {
     });
   });
 
-  // console.log(data);
+  console.log(data);
 
   const imageUrl =
     data.fields.image === "null"
@@ -212,10 +212,10 @@ router.post("/create", async (req, res) => {
 
   const galleryLinks =
     data.fields.gallery === "null"
-      ? ""
+      ? []
       : await uploadMultipleFilesToCloudinary(data.files.gallery);
 
-  // console.log(galleryLinks);
+  console.log(galleryLinks);
 
   const discount =
     ((Number(data.fields.price) - Number(data.fields.salePrice)) /
@@ -237,7 +237,7 @@ router.post("/create", async (req, res) => {
         discount: Math.round(discount),
         inStock: Number(data.fields.inStock),
         category: data.fields.category,
-        subCategory: data.fields.subCategory,
+        subCategory: JSON.parse(data.fields.subCategory),
         status: data.fields.status,
         marketPlace: data.fields.marketPlace,
       },
@@ -306,7 +306,7 @@ router.post("/edit/:id", async (req, res) => {
         discount: Math.round(discount),
         inStock: Number(data.fields.inStock),
         category: data.fields.category,
-        subCategory: data.fields.subCategory,
+        subCategory: JSON.parse(data.fields.subCategory),
         status: data.fields.status,
         marketPlace: data.fields.marketPlace,
       },
